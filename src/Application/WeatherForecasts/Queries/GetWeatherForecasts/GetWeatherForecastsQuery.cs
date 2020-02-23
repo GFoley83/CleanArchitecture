@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using CleanArchitecture.Application.Common.Interfaces;
+using CleanArchitecture.Application.Common;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +9,10 @@ using System.Threading.Tasks;
 
 namespace CleanArchitecture.Application.WeatherForecasts.Queries.GetWeatherForecasts
 {
-    public class GetWeatherForecastsQuery : IRequest<IEnumerable<WeatherForecast>>
+    public class GetWeatherForecastsQuery : IRequestRequiresUserRole<IEnumerable<WeatherForecast>>
     {
+        public string RequiredRole => UserRole.GlobalAdmin;
+
         public class GetWeatherForecastsQueryHandler : IRequestHandler<GetWeatherForecastsQuery, IEnumerable<WeatherForecast>>
         {
             private static readonly string[] Summaries = new[]

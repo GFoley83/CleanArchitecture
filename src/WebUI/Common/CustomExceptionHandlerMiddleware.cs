@@ -44,6 +44,9 @@ namespace CleanArchitecture.WebUI.Common
                 case NotFoundException _:
                     code = HttpStatusCode.NotFound;
                     break;
+                case UnauthorizedAccessException _:
+                    code = HttpStatusCode.Forbidden;
+                    break;
             }
 
             context.Response.ContentType = "application/json";
@@ -60,9 +63,6 @@ namespace CleanArchitecture.WebUI.Common
 
     public static class CustomExceptionHandlerMiddlewareExtensions
     {
-        public static IApplicationBuilder UseCustomExceptionHandler(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<CustomExceptionHandlerMiddleware>();
-        }
+        public static IApplicationBuilder UseCustomExceptionHandler(this IApplicationBuilder builder) => builder.UseMiddleware<CustomExceptionHandlerMiddleware>();
     }
 }

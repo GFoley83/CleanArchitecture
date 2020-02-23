@@ -9,6 +9,7 @@ using IdentityServer4.Models;
 using IdentityServer4.Test;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,13 +25,25 @@ namespace CleanArchitecture.Infrastructure
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
-                    configuration.GetConnectionString("DefaultConnection"), 
+                    configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
             services.AddScoped<IApplicationDbContext>(provider => provider.GetService<ApplicationDbContext>());
 
-            services.AddDefaultIdentity<ApplicationUser>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            services
+                .AddDefaultIdentity<ApplicationUser>(options =>
+                {
+                    // Basic built in validations
+                    options.Password.RequireDigit = false;
+                    options.Password.RequireLowercase = true;
+                    options.Password.RequireNonAlphanumeric = true;
+                    options.Password.RequireUppercase = true;
+                    options.Password.RequiredLength = 6;
+                })
+                .AddRoles<IdentityRole>()
+                .AddRoleManager<RoleManager<IdentityRole>>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
             if (environment.IsEnvironment("Test"))
             {
@@ -53,7 +66,8 @@ namespace CleanArchitecture.Infrastructure
                             Password = "CleanArchitecture!",
                             Claims = new List<Claim>
                             {
-                                new Claim(JwtClaimTypes.Email, "jason@clean-architecture")
+                                new Claim(JwtClaimTypes.Email, "jason@clean-architecture"),
+                                new Claim(JwtClaimTypes.Role, "GlobalAdmin")
                             }
                         }
                     });

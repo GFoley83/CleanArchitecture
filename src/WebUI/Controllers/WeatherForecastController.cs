@@ -8,9 +8,6 @@ namespace CleanArchitecture.WebUI.Controllers
     public class WeatherForecastController : ApiController
     {
         [HttpGet]
-        public async Task<IEnumerable<WeatherForecast>> Get()
-        {
-            return await Mediator.Send(new GetWeatherForecastsQuery());
-        }
+        public Task<IEnumerable<WeatherForecast>> Get() => Mediator.Send(new GetWeatherForecastsQuery());
     }
 }

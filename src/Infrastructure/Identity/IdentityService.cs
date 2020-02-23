@@ -3,6 +3,7 @@ using CleanArchitecture.Application.Common.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace CleanArchitecture.Infrastructure.Identity
@@ -22,7 +23,8 @@ namespace CleanArchitecture.Infrastructure.Identity
 
             return user.UserName;
         }
-        public async Task<(Result Result, string UserId)> CreateUserAsync(string userName, string password)
+
+        public async Task<(Result Result, string UserId)> CreateUserAsync(string userName, string password, string role = null)
         {
             var user = new ApplicationUser
             {
@@ -31,6 +33,12 @@ namespace CleanArchitecture.Infrastructure.Identity
             };
 
             var result = await _userManager.CreateAsync(user, password);
+
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                user = await _userManager.FindByIdAsync(user.Id);
+                await _userManager.AddToRoleAsync(user, role);
+            }
 
             return (result.ToApplicationResult(), user.Id);
         }
@@ -47,7 +55,19 @@ namespace CleanArchitecture.Infrastructure.Identity
             return Result.Success();
         }
 
-        public async Task<Result> DeleteUserAsync(ApplicationUser user)
+        public async Task<Result> UserIsInRoleAsync(string userId, string role)
+        {
+            var user = _userManager.Users.SingleOrDefault(u => u.Id == userId);
+            
+            if (user == null || !await _userManager.IsInRoleAsync(user, role))
+            {
+                return Result.Failure(new string[] { "User not found or is not in role." });
+            }
+
+            return Result.Success();
+        }
+
+        private async Task<Result> DeleteUserAsync(ApplicationUser user)
         {
             var result = await _userManager.DeleteAsync(user);
 

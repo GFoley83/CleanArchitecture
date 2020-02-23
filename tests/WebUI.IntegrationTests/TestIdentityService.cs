@@ -12,12 +12,17 @@ namespace CleanArchitecture.WebUI.IntegrationTests
             return Task.FromResult("jason@clean-architecture");
         }
 
-        public Task<(Result Result, string UserId)> CreateUserAsync(string userName, string password)
+        public Task<(Result Result, string UserId)> CreateUserAsync(string userName, string password, string role = null)
         {
             throw new NotImplementedException();
         }
 
         public Task<Result> DeleteUserAsync(string userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result> UserIsInRoleAsync(string userId, string role)
         {
             throw new NotImplementedException();
         }

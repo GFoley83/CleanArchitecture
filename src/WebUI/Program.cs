@@ -27,8 +27,9 @@ namespace CleanArchitecture.WebUI
                     context.Database.Migrate();
 
                     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-                    await ApplicationDbContextSeed.SeedAsync(userManager);
+                    await ApplicationDbContextSeed.SeedAsync(userManager, roleManager);
                 }
                 catch (Exception ex)
                 {
