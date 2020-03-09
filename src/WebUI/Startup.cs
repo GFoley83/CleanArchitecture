@@ -15,6 +15,7 @@ using NSwag;
 using NSwag.Generation.Processors.Security;
 using System.Linq;
 using CleanArchitecture.Infrastructure;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace CleanArchitecture.WebUI
 {

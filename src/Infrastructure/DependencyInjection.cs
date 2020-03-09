@@ -5,9 +5,11 @@ using CleanArchitecture.Infrastructure.Identity;
 using CleanArchitecture.Infrastructure.Persistence;
 using CleanArchitecture.Infrastructure.Services;
 using IdentityModel;
+using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 
 namespace CleanArchitecture.Infrastructure
@@ -30,20 +34,36 @@ namespace CleanArchitecture.Infrastructure
 
             services.AddScoped<IApplicationDbContext>(provider => provider.GetService<ApplicationDbContext>());
 
-            services
-                .AddDefaultIdentity<ApplicationUser>(options =>
-                {
-                    // Basic built in validations
-                    options.Password.RequireDigit = false;
-                    options.Password.RequireLowercase = true;
-                    options.Password.RequireNonAlphanumeric = true;
-                    options.Password.RequireUppercase = true;
-                    options.Password.RequiredLength = 6;
-                })
-                .AddRoles<IdentityRole>()
+
+
+            //services
+            //    .AddDefaultIdentity<ApplicationUser>(options =>
+            //    {
+            //        // Basic built in validations
+            //        options.Password.RequireDigit = false;
+            //        options.Password.RequireLowercase = true;
+            //        options.Password.RequireNonAlphanumeric = true;
+            //        options.Password.RequireUppercase = true;
+            //        options.Password.RequiredLength = 6;
+            //    })
+            //    .AddRoles<IdentityRole>()
+            //    .AddRoleManager<RoleManager<IdentityRole>>()
+            //    .AddEntityFrameworkStores<ApplicationDbContext>()
+            //    .AddDefaultTokenProviders();
+
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                // Basic built in validations
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequiredLength = 6;
+            })
                 .AddRoleManager<RoleManager<IdentityRole>>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultUI()
+                .AddDefaultTokenProviders()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
 
             if (environment.IsEnvironment("Test"))
             {
@@ -75,12 +95,30 @@ namespace CleanArchitecture.Infrastructure
             else
             {
                 services.AddIdentityServer()
-                    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+                    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>(cfg =>
+                    {
+                        //cfg.ApiResources.First().UserClaims.Add(ClaimTypes.Role);
+                        //cfg.ApiResources.First().UserClaims.Add(JwtClaimTypes.Role);
+
+                        //cfg.IdentityResources.Add(new IdentityResource { Name = "role", UserClaims = new List<string> { "role" } });
+                        //cfg.IdentityResources.Add(new IdentityResource { Name = "roles", UserClaims = new List<string> { "role" } });
+                      
+                        //cfg.Clients.First().AllowedScopes = new List<string>
+                        //{
+                        //    IdentityServerConstants.StandardScopes.OpenId,
+                        //    IdentityServerConstants.StandardScopes.Profile,
+                        //    "roles",
+                        //    "role"
+                        //};
+                    });
+
+                services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, AppUserClaimsPrincipalFactory>();
 
                 services.AddTransient<IDateTime, DateTimeService>();
                 services.AddTransient<IIdentityService, IdentityService>();
                 services.AddTransient<ICsvFileBuilder, CsvFileBuilder>();
             }
+
 
             services.AddAuthentication()
                 .AddIdentityServerJwt();

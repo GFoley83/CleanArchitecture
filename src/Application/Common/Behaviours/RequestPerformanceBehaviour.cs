@@ -1,6 +1,6 @@
-﻿using MediatR;
+﻿using CleanArchitecture.Application.Common.Interfaces;
+using MediatR;
 using Microsoft.Extensions.Logging;
-using CleanArchitecture.Application.Common.Interfaces;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +15,7 @@ namespace CleanArchitecture.Application.Common.Behaviours
         private readonly IIdentityService _identityService;
 
         public RequestPerformanceBehaviour(
-            ILogger<TRequest> logger, 
+            ILogger<TRequest> logger,
             ICurrentUserService currentUserService,
             IIdentityService identityService)
         {

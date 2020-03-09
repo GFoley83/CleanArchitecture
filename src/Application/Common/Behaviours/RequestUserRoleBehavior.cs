@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace CleanArchitecture.Application.Common.Behaviours
 {
     public class RequestUserRoleBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-        where TRequest : IRequest<TResponse>
+        where TRequest : IRequest<TResponse>, IRequestRequiresUserRole<TResponse>
     {
         private readonly ILogger _logger;
         private readonly ICurrentUserService _currentUserService;
