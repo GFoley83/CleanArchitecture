@@ -12,7 +12,8 @@ namespace CleanArchitecture.Application
         {
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
             services.AddMediatR(Assembly.GetExecutingAssembly());
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestUserRoleBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestAuthorisationBehavior<,>));
+            // services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestUserRoleBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestPerformanceBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehavior<,>));
 

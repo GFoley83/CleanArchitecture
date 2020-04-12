@@ -74,11 +74,13 @@ export class TodoComponent {
             error => {
                 let errors = JSON.parse(error.response);
 
-                if (errors && errors.Title) {
-                    this.newListEditor.error = errors.Title[0];
-                }
+              if (errors && errors.Title) {
+                this.newListEditor.error = errors.Title[0];
+              } else if (errors && errors.error) {
+                this.newListEditor.error = errors.error;
+              }
 
-                setTimeout(() => document.getElementById("title").focus(), 250);
+              setTimeout(() => document.getElementById("title").focus(), 250);
             }
         );
     }

@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using CleanArchitecture.Application.TodoLists.Commands.CreateTodoList;
+using FluentValidation;
+using MediatR;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
 using ValidationException = CleanArchitecture.Application.Common.Exceptions.ValidationException;
 
 namespace CleanArchitecture.Application.Common.Behaviours
@@ -20,20 +21,37 @@ namespace CleanArchitecture.Application.Common.Behaviours
 
         public Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
         {
+            var validator = _validators.GetCommandValidator();
+
+            if (validator == null)
+            {
+                return next();
+            }
+
             var context = new ValidationContext(request);
 
-            var failures = _validators
-                .Select(v => v.Validate(context))
-                .SelectMany(result => result.Errors)
+            var failures = validator
+                .Validate(context)
+                .Errors
                 .Where(f => f != null)
                 .ToList();
 
-            if (failures.Count != 0)
+            if (failures.Count == 0)
             {
-                throw new ValidationException(failures);
+                return next();
             }
 
-            return next();
+            throw new ValidationException(failures);
         }
+    }
+
+
+    public static class FluentValidationExt
+    {
+        public static IValidator<TRequest> GetCommandValidator<TRequest>(this IEnumerable<IValidator<TRequest>> validators)
+            => validators.SingleOrDefault(i => !(i is IAuthValidator));
+
+        public static IValidator<TRequest> GetAuthValidator<TRequest>(this IEnumerable<IValidator<TRequest>> validators)
+            => validators.SingleOrDefault(i => i is IAuthValidator);
     }
 }

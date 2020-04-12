@@ -74,8 +74,15 @@ namespace CleanArchitecture.Infrastructure
             }
             else
             {
-                services.AddIdentityServer()
-                    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+var identityServerBuilder = services.AddIdentityServer();
+
+if (environment.IsEnvironment("Development"))
+{
+    identityServerBuilder.AddDeveloperSigningCredential();
+}
+
+identityServerBuilder
+    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
 
                 services.AddTransient<IDateTime, DateTimeService>();
                 services.AddTransient<IIdentityService, IdentityService>();

@@ -58,10 +58,22 @@ namespace CleanArchitecture.Infrastructure.Identity
         public async Task<Result> UserIsInRoleAsync(string userId, string role)
         {
             var user = _userManager.Users.SingleOrDefault(u => u.Id == userId);
-            
+
             if (user == null || !await _userManager.IsInRoleAsync(user, role))
             {
-                return Result.Failure(new string[] { "User not found or is not in role." });
+                return Result.Failure(new[] { "User not found or is not in role." });
+            }
+
+            return Result.Success();
+        }
+
+        public async Task<Result> UserHasClaim(string userId, string type, string value)
+        {
+            var user = _userManager.Users.SingleOrDefault(u => u.Id == userId);
+
+            if (user == null || !(await _userManager.GetClaimsAsync(user)).Any(i => i.Type == type && i.Value == value))
+            {
+                return Result.Failure(new[] { $"User does not have claim \"{user}\"." });
             }
 
             return Result.Success();
