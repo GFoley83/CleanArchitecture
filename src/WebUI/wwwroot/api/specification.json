@@ -410,6 +410,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "listId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "title": {
             "type": "string",
             "nullable": true

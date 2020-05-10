@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using CleanArchitecture.Application.Common;
+using CleanArchitecture.Application.Common.Attributes;
 using CleanArchitecture.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace CleanArchitecture.Application.TodoLists.Queries.ExportTodos
 {
+    [Cache(CacheConstants.ExportTodosQueryPropertyCacheKey)]
     public class ExportTodosQuery : IRequest<ExportTodosVm>
     {
         public int ListId { get; set; }
