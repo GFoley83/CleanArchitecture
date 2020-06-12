@@ -22,7 +22,8 @@ namespace CleanArchitecture.Infrastructure.Identity
 
             return user.UserName;
         }
-        public async Task<(Result Result, string UserId)> CreateUserAsync(string userName, string password)
+
+        public async Task<(Result Result, string UserId)> CreateUserAsync(string userName, string password, string role = null)
         {
             var user = new ApplicationUser
             {
@@ -31,6 +32,12 @@ namespace CleanArchitecture.Infrastructure.Identity
             };
 
             var result = await _userManager.CreateAsync(user, password);
+
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                user = await _userManager.FindByIdAsync(user.Id);
+                await _userManager.AddToRoleAsync(user, role);
+            }
 
             return (result.ToApplicationResult(), user.Id);
         }
@@ -47,7 +54,31 @@ namespace CleanArchitecture.Infrastructure.Identity
             return Result.Success();
         }
 
-        public async Task<Result> DeleteUserAsync(ApplicationUser user)
+        public async Task<Result> UserIsInRoleAsync(string userId, string role)
+        {
+            var user = _userManager.Users.SingleOrDefault(u => u.Id == userId);
+
+            if (user == null || !await _userManager.IsInRoleAsync(user, role))
+            {
+                return Result.Failure(new[] { "User not found or is not in role." });
+            }
+
+            return Result.Success();
+        }
+
+        public async Task<Result> UserHasClaim(string userId, string type, string value)
+        {
+            var user = _userManager.Users.SingleOrDefault(u => u.Id == userId);
+
+            if (user == null || !(await _userManager.GetClaimsAsync(user)).Any(i => i.Type == type && i.Value == value))
+            {
+                return Result.Failure(new[] { $"User does not have claim for \"{type}\"." });
+            }
+
+            return Result.Success();
+        }
+
+        private async Task<Result> DeleteUserAsync(ApplicationUser user)
         {
             var result = await _userManager.DeleteAsync(user);
 

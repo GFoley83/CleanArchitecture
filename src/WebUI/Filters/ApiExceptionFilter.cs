@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
+using System.Security.Authentication;
 
 namespace CleanArchitecture.WebUI.Filters
 {
@@ -19,6 +20,8 @@ namespace CleanArchitecture.WebUI.Filters
             {
                 { typeof(ValidationException), HandleValidationException },
                 { typeof(NotFoundException), HandleNotFoundException },
+                { typeof(AuthenticationException), HandleNotAuthenticatedException },
+                { typeof(UnauthorizedAccessException), HandleNotAuthorisedException },
             };
         }
 
@@ -84,6 +87,44 @@ namespace CleanArchitecture.WebUI.Filters
             };
 
             context.Result = new NotFoundObjectResult(details);
+
+            context.ExceptionHandled = true;
+        }
+
+        private void HandleNotAuthenticatedException(ExceptionContext context)
+        {
+            var exception = context.Exception as AuthenticationException;
+
+            var details = new ProblemDetails()
+            {
+                Type = "https://tools.ietf.org/html/rfc7235#section-3.1",
+                Title = "Missing or incorrect authentication credentials.",
+                Detail = exception.Message
+            };
+
+            context.Result = new ObjectResult(details)
+            {
+                StatusCode = StatusCodes.Status401Unauthorized
+            };
+
+            context.ExceptionHandled = true;
+        }
+
+        private void HandleNotAuthorisedException(ExceptionContext context)
+        {
+            var exception = context.Exception as UnauthorizedAccessException;
+
+            var details = new ProblemDetails()
+            {
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.3",
+                Title = "The user was not authorised to perform the operation.",
+                Detail = exception.Message
+            };
+
+            context.Result = new ObjectResult(details)
+            {
+                StatusCode = StatusCodes.Status403Forbidden
+            };
 
             context.ExceptionHandled = true;
         }

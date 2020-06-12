@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using FluentValidation;
+using MediatR;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
 using ValidationException = CleanArchitecture.Application.Common.Exceptions.ValidationException;
 
 namespace CleanArchitecture.Application.Common.Behaviours
@@ -20,16 +20,19 @@ namespace CleanArchitecture.Application.Common.Behaviours
 
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
         {
-            if (_validators.Any())
+            if (!_validators.Any())
             {
-                var context = new ValidationContext(request);
-
-                var validationResults = await Task.WhenAll(_validators.Select(v => v.ValidateAsync(context, cancellationToken)));
-                var failures = validationResults.SelectMany(r => r.Errors).Where(f => f != null).ToList();
-
-                if (failures.Count != 0)
-                    throw new ValidationException(failures);
+                return await next();
             }
+
+            var context = new ValidationContext(request);
+
+            var validationResults = await Task.WhenAll(_validators.Select(v => v.ValidateAsync(context, cancellationToken)));
+            var failures = validationResults.SelectMany(r => r.Errors).Where(f => f != null).ToList();
+
+            if (failures.Count != 0)
+                throw new ValidationException(failures);
+
             return await next();
         }
     }

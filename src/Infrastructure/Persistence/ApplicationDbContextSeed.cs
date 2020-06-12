@@ -1,20 +1,31 @@
-﻿using CleanArchitecture.Domain.Entities;
+﻿using CleanArchitecture.Application.Common;
+using CleanArchitecture.Domain.Entities;
 using CleanArchitecture.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace CleanArchitecture.Infrastructure.Persistence
 {
     public static class ApplicationDbContextSeed
     {
-        public static async Task SeedDefaultUserAsync(UserManager<ApplicationUser> userManager)
+        public static async Task SeedDefaultUserAsync(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             var defaultUser = new ApplicationUser { UserName = "administrator@localhost", Email = "administrator@localhost" };
+
+            if (!await roleManager.RoleExistsAsync(Constants.UserRoles.GlobalAdmin))
+            {
+                await roleManager.CreateAsync(new IdentityRole(Constants.UserRoles.GlobalAdmin));
+            }
 
             if (userManager.Users.All(u => u.UserName != defaultUser.UserName))
             {
                 await userManager.CreateAsync(defaultUser, "Administrator1!");
+
+                defaultUser = await userManager.FindByNameAsync(defaultUser.UserName);
+                await userManager.AddToRoleAsync(defaultUser, Constants.UserRoles.GlobalAdmin);
+                await userManager.AddClaimAsync(defaultUser, new Claim(ClaimTypes.Role, Constants.UserRoles.GlobalAdmin));
             }
         }
 
@@ -23,7 +34,7 @@ namespace CleanArchitecture.Infrastructure.Persistence
             // Seed, if necessary
             if (!context.TodoLists.Any())
             {
-                context.TodoLists.Add(new TodoList
+                await context.TodoLists.AddAsync(new TodoList
                 {
                     Title = "Shopping",
                     Items =
