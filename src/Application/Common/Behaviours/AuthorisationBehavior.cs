@@ -24,34 +24,34 @@ namespace CleanArchitecture.Application.Common.Behaviours
             _currentUserService = currentUserService;
         }
 
-public Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
-{
-    var validator = _validators.GetAuthValidator();
+        public Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
+        {
+            var validator = _validators.GetAuthValidator();
 
-    if (validator == null)
-    {
-        return next();
-    }
+            if (validator == null)
+            {
+                return next();
+            }
 
-    if (string.IsNullOrEmpty(_currentUserService.UserId))
-    {
-        throw new AuthenticationException("User must be signed in.");
-    }
+            if (string.IsNullOrEmpty(_currentUserService.UserId))
+            {
+                throw new AuthenticationException("User must be signed in.");
+            }
 
-    var context = new ValidationContext(request);
+            var context = new ValidationContext(request);
 
-    var failures = validator
-        .Validate(context)
-        .Errors
-        .Where(f => f != null)
-        .ToList();
+            var failures = validator
+                .Validate(context)
+                .Errors
+                .Where(f => f != null)
+                .ToList();
 
-    if (failures.Count == 0)
-    {
-        return next();
-    }
+            if (failures.Count == 0)
+            {
+                return next();
+            }
 
-    throw new UnauthorizedAccessException(string.Join("", failures));
-}
+            throw new UnauthorizedAccessException(string.Join("", failures));
+        }
     }
 }
